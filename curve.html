@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi d'Investissement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #000000;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+        .info-item {
+            margin: 10px 0;
+        }
+        .progress-container {
+            text-align: center;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background-color: #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: green;
+            transition: width 0.5s ease-in-out;
+        }
+        button {
+            display: block;
+            width: 100%;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #ff9900;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #ff7b00;
+        }
+        .whatsapp-chat {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+        .whatsapp-chat a img {
+            width: 60px;
+            height: 60px;
+        }
+        #message {
+            text-align: center;
+            font-weight: bold;
+            color: #08cdf0;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Suivi d'Investissement</h1>
+    <div class="container">
+        <!-- Première Section : Informations Utilisateur -->
+        <div class="section" id="userSection">
+            <h2>Informations de l'Investisseur</h2>
+            <div id="userInfo"></div>
+        </div>
+
+        <!-- Deuxième Section : Barre de Progression -->
+        <div class="section">
+            <h2>Progression de l'Investissement</h2>
+            <div id="message">En attente des fonds d'investissement...</div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress" id="progressBar"></div>
+                </div>
+            </div>
+            <button id="startBtn" onclick="startInvestment()">Démarrer l'investissement</button>
+            <button id="unlockBtn" style="display:none;" onclick="requestUnlockCode()">Déblocage</button>
+            <button id="receiveBtn" style="display:none;" onclick="receiveBenefits()">Recevoir mes bénéfices</button>
+        </div>
+    </div>
+
+    <!-- Chat WhatsApp -->
+    <div class="whatsapp-chat">
+        <a href="https://wa.me/2348029158828" target="_blank">
+            <img src="https://cdn-icons-png.flaticon.com/512/733/733585.png" alt="Service Client WhatsApp">
+        </a>
+    </div>
+
+    <script>
+        let progress = 0;
+        let interval;
+
+        // Récupération des informations utilisateur
+        function loadUserData() {
+            const data = JSON.parse(localStorage.getItem('investmentData'));
+            if (data) {
+                const userInfoDiv = document.getElementById('userInfo');
+                userInfoDiv.innerHTML = `
+                    <div class="info-item"><strong>Pays :</strong> ${data.country}</div>
+                    <div class="info-item"><strong>Nom :</strong> ${data.name}</div>
+                    <div class="info-item"><strong>Téléphone :</strong> ${data.indicative} ${data.phone}</div>
+                    <div class="info-item"><strong>Montant Investi :</strong> ${data.amount}</div>
+                    <div class="info-item"><strong>Montant à Recevoir :</strong> ${data.receive}</div>
+                `;
+            }
+        }
+
+        loadUserData();
+
+        // Fonction pour démarrer l'investissement
+        function startInvestment() {
+            const code = prompt("Entrez le code de suivi de l'investissement (administrateur) :");
+            if (code === "12345") { // Exemple de code admin
+                document.getElementById("message").innerText = "Investissement en cours...";
+                document.getElementById("startBtn").style.display = "none";
+                interval = setInterval(updateProgress, 100);
+            } else {
+                alert("Code incorrect. Veuillez contacter l'administrateur.");
+            }
+        }
+
+        // Fonction pour faire avancer la barre de progression
+        function updateProgress() {
+            if (progress < 97) {
+                progress++;
+                document.getElementById("progressBar").style.width = progress + "%";
+            } else {
+                clearInterval(interval);
+                document.getElementById("progressBar").style.backgroundColor = "red";
+                document.getElementById("message").innerText = `Mr/Mme "${JSON.parse(localStorage.getItem('investmentData')).name}" veuillez payer les frais de déblocage afin de recevoir immédiatement vos bénéfices dans les 10 minutes.`;
+                document.getElementById("unlockBtn").style.display = "block";
+            }
+        }
+
+        // Fonction pour demander le code de déblocage
+        function requestUnlockCode() {
+            const code = prompt("Entrez le code de déblocage (administrateur) :");
+            if (code === "67890") { // Code de déblocage
+                progress = 100;
+                document.getElementById("progressBar").style.width = "100%";
+                document.getElementById("progressBar").style.backgroundColor = "orange";
+                document.getElementById("message").innerText = "Felicitation votre investissement est termine🎉✨";
+                document.getElementById("unlockBtn").style.display = "none";
+                document.getElementById("receiveBtn").style.display = "block";
+            } else {
+                alert("Code incorrect. Veuillez contacter l'administrateur.");
+            }
+        }
+
+        // Fonction pour rediriger vers la page bénéfice
+        function receiveBenefits() {
+            window.location.href = "benefice.html";
+        }
+    </script>
+</body>
+</html>

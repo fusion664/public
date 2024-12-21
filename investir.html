@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investir - Africa Investissement</title>
+    <style>
+        /* Style global */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #ff8800;
+        }
+        form {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        .phone-container {
+            display: flex;
+            gap: 10px;
+        }
+        .phone-container input,
+        .phone-container select {
+            flex: 1;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        select:focus, input:focus {
+            border-color: #ff9800;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff9800;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #e68900;
+        }
+        .error {
+            color: rgb(255, 0, 0);
+            font-size: 0.9em;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <form id="investmentForm" onsubmit="submitForm(event)">
+        <h1>Formulaire d'Investissement</h1>
+        <!-- Pays -->
+        <label for="country">Pays</label>
+        <select id="country" onchange="updateIndicativeAndPayment()">
+            <option value="">Sélectionnez votre pays</option>
+            <option value="SN">Sénégal</option>
+            <option value="BJ">Bénin</option>
+            <option value="BF">Burkina Faso</option>
+            <option value="CM">Cameroun</option>
+            <option value="CF">C.A.R</option>
+            <option value="TD">Tchad</option>
+            <option value="CG">Congo Brazzaville</option>
+            <option value="CD">Congo Kinshasa</option>
+            <option value="CI">Côte d'Ivoire</option>
+            <option value="GA">Gabon</option>
+            <option value="GN">Guinée Conakry</option>
+            <option value="ML">Mali</option>
+            <option value="NE">Niger</option>
+            <option value="TG">Togo</option>
+        </select>
+
+        <!-- Nom -->
+        <label for="name">Nom de l'investisseur</label>
+        <input type="text" id="name" required>
+
+        <!-- Numéro de téléphone et indicatif -->
+        <label for="phone">Numéro de Téléphone</label>
+        <div class="phone-container">
+            <select id="indicative" readonly></select>
+            <input type="text" id="phone" placeholder="Ex: 612345678" oninput="validatePhoneNumber()">
+        </div>
+        <div id="phoneError" class="error">Numéro invalide pour ce pays.</div>
+
+        <!-- Numéro de transaction -->
+        <label for="transactionNumber">Numéro de Transaction</label>
+        <input type="text" id="transactionNumber" required>
+
+        <!-- Mode de paiement -->
+        <label for="payment">Mode de Paiement</label>
+        <select id="payment">
+            <option value="">Sélectionnez le mode de paiement</option>
+        </select>
+
+        <!-- Montant à investir -->
+        <label for="amount">Montant à Investir</label>
+        <select id="amount" onchange="calculateAmountToReceive()">
+            <option value="">Sélectionnez un montant</option>
+        </select>
+
+        <!-- Montant à recevoir -->
+        <label for="amountReceive">Montant à Recevoir</label>
+        <input type="text" id="amountReceive" readonly>
+
+        <!-- Bouton Enregistrer -->
+        <button type="submit">Enregistrer</button>
+    </form>
+
+    <script>
+        const countryData = {
+            "SN": { indicative: "+221", payment: ["Orange Money", "Wave"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "CD": { indicative: "+243", payment: ["M-Pesa", "Airtel Money", "Orange Money"], amounts: [100, 200, 300, 400, 500] },
+            "GN": { indicative: "+224", payment: ["Orange Money", "MTN Money", "Banque"], amounts: [1000000, 2000000, 3000000, 4000000, 5000000] },
+            "default": { indicative: "+237", payment: ["Orange Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "BJ": { indicative: "+229", payment: ["MTN Money", "Moov Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "BF": { indicative: "+226", payment: ["Orange Money", "Wave", "Moov Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "CI": { indicative: "+225", payment: ["Orange Money", "Wave", "MTN Money", "Moov Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "NE": { indicative: "+227", payment: ["Orange Money", "Moov Money", "Airtel Money", "Mynita", "Zamani"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "TG": { indicative: "+228", payment: ["T-Money", "Moov Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "TD": { indicative: "+235", payment: ["Airtel Money", "Moov Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "ML": { indicative: "+223", payment: ["Orange Money", "Wave"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "GA": { indicative: "+241", payment: ["Airtel Money", "Moov MONEY"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "CF": { indicative: "+236", payment: ["Orange Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+            "CG": { indicative: "+242", payment: ["Airtel Money", "MTN Money"], amounts: [100000, 200000, 300000, 400000, 500000] },
+        };
+
+        function updateIndicativeAndPayment() {
+            const country = document.getElementById("country").value;
+            const data = countryData[country] || countryData["default"];
+
+            // Mise à jour de l'indicatif
+            const indicativeSelect = document.getElementById("indicative");
+            indicativeSelect.innerHTML = `<option>${data.indicative}</option>`;
+
+            // Mise à jour des modes de paiement
+            const paymentSelect = document.getElementById("payment");
+            paymentSelect.innerHTML = "<option value=''>Sélectionnez le mode de paiement</option>";
+            data.payment.forEach(p => paymentSelect.innerHTML += `<option>${p}</option>`);
+
+            // Mise à jour des montants
+            const amountSelect = document.getElementById("amount");
+            amountSelect.innerHTML = "<option value=''>Sélectionnez un montant</option>";
+            data.amounts.forEach(a => amountSelect.innerHTML += `<option>${a} ${country === 'CD' ? 'USD' : 'FCFA'}</option>`);
+        }
+
+        function validatePhoneNumber() {
+            const phone = document.getElementById("phone").value;
+            const errorDiv = document.getElementById("phoneError");
+            if (phone.length !== 9) {
+                errorDiv.style.display = "block";
+            } else {
+                errorDiv.style.display = "none";
+            }
+        }
+
+        function calculateAmountToReceive() {
+            const amount = document.getElementById("amount").value;
+            const receive = amount.replace(/\D/g, "") * 6.5;
+            document.getElementById("amountReceive").value = `${receive} XOF`;
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+            const formData = {
+                country: document.getElementById("country").value,
+                indicative: document.getElementById("indicative").value,
+                phone: document.getElementById("phone").value,
+                payment: document.getElementById("payment").value,
+                amount: document.getElementById("amount").value,
+                receive: document.getElementById("amountReceive").value,
+                transaction: document.getElementById("transactionNumber").value,
+                name: document.getElementById("name").value
+            };
+            localStorage.setItem("investmentData", JSON.stringify(formData));
+            window.location.href = "curve.html";
+        }
+    </script>
+</body>
+</html>

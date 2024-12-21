@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Sécurisée</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #e3f2fd, #90caf9);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            width: 400px;
+        }
+
+        h1 {
+            color: #004ba0;
+        }
+
+        input[type="password"] {
+            padding: 10px;
+            margin-top: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #01579b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .progress-circle {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+
+        .progress-circle svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-circle circle {
+            fill: none;
+            stroke-width: 10;
+        }
+
+        .progress-circle .background {
+            stroke: #ddd;
+        }
+
+        .progress-circle .progress {
+            stroke: #4caf50;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 0.3s linear;
+        }
+
+        .progress-circle .time {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Accès Sécurisé</h1>
+        <p>Veuillez saisir le code d'accès pour continuer.</p>
+        <input type="password" id="accessCode" placeholder="Code d'accès" required>
+        <button onclick="validateCode()">Valider</button>
+
+        <div id="progressSection" class="hidden">
+            <h2 id="clientName"></h2>
+            <p>Solde actuel : <span id="clientBalance"></span></p>
+
+            <div class="progress-circle">
+                <svg>
+                    <circle class="background" cx="75" cy="75" r="70"></circle>
+                    <circle class="progress" cx="75" cy="75" r="70"></circle>
+                </svg>
+                <div class="time" id="timeRemaining">15:00</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const correctCode = "1234"; // Code d'accès défini par l'administrateur
+        let countdownInterval;
+
+        // Fonction pour valider le code
+        function validateCode() {
+            const enteredCode = document.getElementById("accessCode").value;
+
+            if (enteredCode === correctCode) {
+                document.querySelector("input").classList.add("hidden");
+                document.querySelector("button").classList.add("hidden");
+                document.getElementById("progressSection").classList.remove("hidden");
+
+                // Afficher les données de l'utilisateur
+                const data = JSON.parse(localStorage.getItem('investmentData'));
+                if (data) {
+                    document.getElementById("clientName").innerText = `Bienvenue, ${data.name}`;
+                    document.getElementById("clientBalance").innerText = `${data.receive} ${data.currency}`;
+                }
+
+                // Lancer la barre de progression
+                startProgress();
+            } else {
+                alert("Code incorrect. Veuillez réessayer.");
+            }
+        }
+
+        // Fonction pour démarrer la barre de progression
+        function startProgress() {
+            const totalTime = 15 * 60; // 15 minutes en secondes
+            let remainingTime = totalTime;
+            const progressCircle = document.querySelector(".progress-circle .progress");
+            const timeDisplay = document.getElementById("timeRemaining");
+
+            countdownInterval = setInterval(() => {
+                if (remainingTime <= 0) {
+                    clearInterval(countdownInterval);
+                    timeDisplay.innerText = "Terminé";
+                    progressCircle.style.strokeDashoffset = 0;
+                } else {
+                    remainingTime--;
+                    const minutes = Math.floor(remainingTime / 60);
+                    const seconds = remainingTime % 60;
+                    timeDisplay.innerText = `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+
+                    // Mise à jour de la barre de progression
+                    const progressPercent = ((totalTime - remainingTime) / totalTime) * 440;
+                    progressCircle.style.strokeDashoffset = 440 - progressPercent;
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

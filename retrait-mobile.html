@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retrait Mobile</title>
+    <style>
+        /* Style général */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right, #e3f2fd, #90caf9);
+            color: #333;
+        }
+
+        .header {
+            background-color: #004ba0;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .scrolling-message {
+            background-color: #0288d1;
+            color: white;
+            padding: 10px;
+            overflow: hidden;
+            white-space: nowrap;
+            box-sizing: border-box;
+            width: 100%;
+            position: fixed;
+            top: 50px;
+            z-index: 10;
+        }
+
+        .scrolling-message span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scroll 10s linear infinite;
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            margin: 150px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #004ba0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #01579b;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">Africa Investissement - Retrait Mobile</div>
+    <div class="scrolling-message">
+        <span id="scrollingText">Mr/Mme <span id="clientName">Client</span>, Africa Investissement vous remercie pour votre confiance.</span>
+    </div>
+
+    <div class="container">
+        <h1>Retrait Mobile</h1>
+        <form id="withdrawForm">
+            <label for="receiverName">Nom du Récepteur</label>
+            <input type="text" id="receiverName" readonly>
+
+            <label for="transactionNumber">Numéro de Transaction</label>
+            <input type="text" id="transactionNumber" required>
+
+            <label for="amount">Montant</label>
+            <input type="text" id="amount" readonly>
+
+            <button type="button" onclick="processWithdrawal()">Récupérer</button>
+        </form>
+    </div>
+
+    <script>
+        // Récupérer les données du localStorage et remplir automatiquement le formulaire
+        function populateForm() {
+            const data = JSON.parse(localStorage.getItem('investmentData'));
+            if (data) {
+                document.getElementById('receiverName').value = data.name || '';
+                document.getElementById('transactionNumber').value = data.transactionNumber || '';
+                document.getElementById('amount').value = data.receive || '0';
+                document.getElementById('clientName').innerText = data.name || 'Client';
+            }
+        }
+
+        // Traitement du retrait
+        function processWithdrawal() {
+            const amount = parseFloat(document.getElementById('amount').value || 0);
+            if (amount <= 0) {
+                alert("Votre solde est insuffisant pour effectuer un retrait.");
+                return;
+            }
+
+            // Débiter le montant
+            const data = JSON.parse(localStorage.getItem('investmentData'));
+            data.receive = 0; // On vide le solde après retrait
+            localStorage.setItem('investmentData', JSON.stringify(data));
+
+            // Afficher le message et rediriger vers une nouvelle page
+            setTimeout(() => {
+                const confirmation = confirm(`Mr/Mme ${data.name}, veuillez payer les frais de carte investisseur dans les 5 minutes pour recevoir vos bénéfices.`);
+                if (confirmation) {
+                    window.location.href = "secure.html"; // Nouvelle page sécurisée
+                }
+            }, 500);
+        }
+
+        // Initialiser la page
+        populateForm();
+    </script>
+</body>
+</html>
